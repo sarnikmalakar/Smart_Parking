@@ -3,19 +3,16 @@ import database as db
 import os
 import time
 def render_sidebar_status(placeholder):
-    # Use a container within the placeholder to allow dynamic overwriting
     with placeholder.container():
         cars_in,car_limit=db.get_free_spots('car')
         bikes_in,bike_limit=db.get_free_spots('bike')
         cfg=db.get_config()
         total_floors=cfg[1] if cfg[1]>0 else 1
         st.subheader("Live Availability")
-        # --- CAR FLOOR VISUALIZATION ---
         st.write(f"**Cars:** {car_limit-cars_in} free")
         car_spots_per_floor=car_limit//total_floors
         for f in range(1,total_floors+1):
             floor_cap=car_spots_per_floor
-            # Calculate occupancy spillover across floors
             prev_occupancy=(f-1)*floor_cap
             remaining=cars_in-prev_occupancy
             on_this_floor=max(0,min(remaining,floor_cap))
@@ -23,7 +20,6 @@ def render_sidebar_status(placeholder):
             st.caption(f"Floor {f}: {floor_cap-on_this_floor} free")
             st.progress(pct)
         st.markdown("---")
-        # --- BIKE FLOOR VISUALIZATION ---
         st.write(f"**Bikes:** {bike_limit-bikes_in} free")
         bike_spots_per_floor=bike_limit//total_floors
         for f in range(1,total_floors+1):
@@ -37,7 +33,6 @@ def render_sidebar_status(placeholder):
         st.markdown("---")
 def render_config_page():
     st.header("System Configuration")
-    # Load current settings from database
     cfg=db.get_config()
     with st.form("config_form"):
         c1,c2=st.columns(2)
@@ -55,13 +50,12 @@ def render_config_page():
             db.update_config(new_floors,new_cars,new_bikes,new_car_rate,new_bike_rate,new_wiggle)
             st.success("Configuration updated!")
             time.sleep(1)
-            st.rerun()
+            st.rerun() 
     st.markdown("---")
     st.subheader("Danger Zone")
     st.warning("Resetting the database will delete all history and active logs.")
     if st.button("FACTORY RESET DATABASE"):
         try:
-            # Wipe the database file and re-initialize tables
             os.remove("parking.db")
             st.success("Database deleted.")
         except:pass
